@@ -8,44 +8,46 @@
 
 #include "HashMapConcurrente.hpp"
 
+using namespace std;
+
 HashMapConcurrente::HashMapConcurrente() {
     for (unsigned int i = 0; i < HashMapConcurrente::cantLetras; i++) {
         tabla[i] = new ListaAtomica<hashMapPair>();
     }
 }
 
-unsigned int HashMapConcurrente::hashIndex(std::string clave) {
+unsigned int HashMapConcurrente::hashIndex(string clave) {
     return (unsigned int)(clave[0] - 'a');
 }
 
-void HashMapConcurrente::incrementar(std::string clave) {
+ListaAtomica<hashMapPair>::iterator find(string clave, ListaAtomica<hashMapPair>* lista) {
+    auto it = lista->begin();
+    while (it != lista->end() && (clave != (*it).first)) it++;
+    return it;
+}
+
+void HashMapConcurrente::incrementar(string clave) {
     int index = hashIndex(clave);
     auto lista = tabla[index];
 
-    //_locks[index].lock();
-    auto it = lista->begin();
-    while (it != lista->end() && (clave != (*it).first)) it++;
+    _locks[index].lock();
+    auto it = find(clave, lista);
     if (it == lista->end()) {
-        _locks[index].lock();
-        it = lista->begin();
-        while (it != lista->end() && (clave != (*it).first)) it++;
-        if (it == lista->end()) { 
-            lista->insertar(hashMapPair(clave, 1));
-            _claves.push_back(clave);
-        } else (*it).second++;
-        _locks[index].unlock();
-    } else (*it).second++;
-   //_locks[index].unlock();
+        lista->insertar(hashMapPair(clave, 1));
+        _claves.push_back(clave);
+    } else {
+        (*it).second++;
+    }
+   _locks[index].unlock();
 }
 
-std::vector<std::string> HashMapConcurrente::claves() {
+vector<string> HashMapConcurrente::claves() {
     return _claves;
 }
 
-unsigned int HashMapConcurrente::valor(std::string clave) {
+unsigned int HashMapConcurrente::valor(string clave) {
     auto lista = tabla[hashIndex(clave)];
-    auto it = lista->begin();
-    while (it != lista->end() && (clave != (*it).first)) it++;
+    auto it = find(clave, lista);
     if (it == lista->end()) return 0;
     return (*it).second;
 }
