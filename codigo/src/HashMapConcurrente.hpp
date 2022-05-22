@@ -30,6 +30,8 @@ class HashMapConcurrente {
     static unsigned int hashIndex(std::string clave);
 
     std::vector<std::string> _claves;
+
+    std::mutex _locks[HashMapConcurrente::cantLetras];
 };
 
 #endif  /* HMC_HPP */

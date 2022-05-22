@@ -19,13 +19,23 @@ unsigned int HashMapConcurrente::hashIndex(std::string clave) {
 }
 
 void HashMapConcurrente::incrementar(std::string clave) {
-    auto lista = tabla[hashIndex(clave)];
+    int index = hashIndex(clave);
+    auto lista = tabla[index];
+
+    //_locks[index].lock();
     auto it = lista->begin();
     while (it != lista->end() && (clave != (*it).first)) it++;
     if (it == lista->end()) {
-        lista->insertar(hashMapPair(clave, 1));
-        _claves.push_back(clave);
+        _locks[index].lock();
+        it = lista->begin();
+        while (it != lista->end() && (clave != (*it).first)) it++;
+        if (it == lista->end()) { 
+            lista->insertar(hashMapPair(clave, 1));
+            _claves.push_back(clave);
+        } else (*it).second++;
+        _locks[index].unlock();
     } else (*it).second++;
+   //_locks[index].unlock();
 }
 
 std::vector<std::string> HashMapConcurrente::claves() {

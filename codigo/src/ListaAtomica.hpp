@@ -31,7 +31,6 @@ class ListaAtomica {
 
     void insertar(const T &valor) {
         Nodo* nuevo_nodo = new Nodo(valor);
-        // estas dos funciones no existen
         nuevo_nodo->_siguiente = _cabeza.load();
         while (!(_cabeza.compare_exchange_weak(nuevo_nodo->_siguiente, nuevo_nodo)));
     }
