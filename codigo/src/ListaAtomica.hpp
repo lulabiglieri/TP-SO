@@ -30,10 +30,11 @@ class ListaAtomica {
     }
 
     void insertar(const T &valor) {
-        Nodo* nuevo_nodo = new Nodo;
-        nuevo_nodo->_valor = valor;
-        nuevo_nodo->_siguiente = atomic_load(_cabeza);
-        while (!(atomic_compare_exchange_weak(_cabeza, nuevo_nodo->_siguiente, nuevo_nodo)));
+        Nodo* nuevo_nodo = new Nodo(valor);
+        // estas dos funciones no existen
+        nuevo_nodo->_siguiente = _cabeza.load();
+        while (!(_cabeza.compare_exchange_weak(nuevo_nodo->_siguiente, nuevo_nodo)));
+        //while (!(std::atomic_compare_exchange_weak(_cabeza, nuevo_nodo->_siguiente, nuevo_nodo)));
     }
 
     T& operator[](size_t i) const {
