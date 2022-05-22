@@ -1,6 +1,6 @@
 #ifndef CHM_CPP
 #define CHM_CPP
-
+#include <algorithm>
 #include <thread>
 // alternativamente #include <pthread.h>
 #include <iostream>
@@ -19,7 +19,11 @@ unsigned int HashMapConcurrente::hashIndex(std::string clave) {
 }
 
 void HashMapConcurrente::incrementar(std::string clave) {
-    // Completar (Ejercicio 2)
+    auto lista = tabla[hashIndex(clave)];
+    auto it = lista->begin();
+    while (it != lista->end() && (clave != (*it).first)) it++;
+    if (it == lista->end()) lista->insertar(hashMapPair(clave, 1));
+    else (*it).second++;
 }
 
 std::vector<std::string> HashMapConcurrente::claves() {
