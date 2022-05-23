@@ -29,7 +29,6 @@ ListaAtomica<hashMapPair>::iterator find(string clave, ListaAtomica<hashMapPair>
 void HashMapConcurrente::incrementar(string clave) {
     int index = hashIndex(clave);
     auto lista = tabla[index];
-
     _locks[index].lock();
     auto it = find(clave, lista);
     if (it == lista->end()) {
@@ -55,7 +54,7 @@ unsigned int HashMapConcurrente::valor(string clave) {
 hashMapPair HashMapConcurrente::maximo() {
     hashMapPair *max = new hashMapPair();
     max->second = 0;
-
+    for (int i = 0; i<cantLetras; i++) _locks[i].lock();
     for (unsigned int index = 0; index < HashMapConcurrente::cantLetras; index++) {
         for (auto &p : *tabla[index]) {
             if (p.second > max->second) {
@@ -64,14 +63,48 @@ hashMapPair HashMapConcurrente::maximo() {
             }
         }
     }
-
+    for (int i = 0; i<cantLetras; i++) _locks[i].unlock();
     return *max;
 }
 
+void HashMapConcurrente::maximoDeLista(atomic<int> &lastProcessedList, hashMapPair max[]) {
+    int index = lastProcessedList.fetch_add(1);
+    while (index < HashMapConcurrente::cantLetras) {
+        _locks[index].lock();
 
+        max[index].second = 0;
+        for (auto &p : *tabla[index]) {
+            if (p.second > max[index].second) {
+                max[index].first = p.first;
+                max[index].second = p.second;
+            }
+        }
+
+        _locks[index].unlock();
+        index = lastProcessedList.fetch_add(1);
+    }
+}
 
 hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
-    // Completar (Ejercicio 3)
+    atomic<int> lastProcessedList(0);
+    hashMapPair max[cantLetras];
+
+    vector<thread> threads(HashMapConcurrente::cantLetras);
+    for (int i = 0; i<cant_threads; i++) {
+        threads[i] = thread(&HashMapConcurrente::maximoDeLista, ref(lastProcessedList), ref(max));
+    }
+
+    for (int i = 0; i<cant_threads; i++) {
+        threads[i].join();
+    }
+
+    int maxIndex = 0;
+    for (int i = 0; i<HashMapConcurrente::cantLetras; i++) {
+        if (max[maxIndex].second < max[i].second) {
+            maxIndex = i;
+        }
+    }
+    return max[maxIndex];
 }
 
 #endif
