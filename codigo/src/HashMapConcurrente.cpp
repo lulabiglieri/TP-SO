@@ -90,12 +90,12 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
     hashMapPair max[cantLetras];
 
     vector<thread> threads(HashMapConcurrente::cantLetras);
-    for (int i = 0; i<cant_threads; i++) {
-        threads[i] = thread(&HashMapConcurrente::maximoDeLista, this, std::ref(lastProcessedList), max);
+    for (auto &t: threads) {
+        t = thread(&HashMapConcurrente::maximoDeLista, this, ref(lastProcessedList), max);
     }
 
-    for (int i = 0; i<cant_threads; i++) {
-        threads[i].join();
+    for (auto &t: threads) {
+        t.join();
     }
 
     int maxIndex = 0;
