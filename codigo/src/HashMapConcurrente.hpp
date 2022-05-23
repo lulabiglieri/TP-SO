@@ -33,7 +33,7 @@ class HashMapConcurrente {
 
     std::mutex _locks[HashMapConcurrente::cantLetras];
 
-    void maximoDeLista(std::atomic<int> &lastProcessedList, hashMapPair max[]);
+    void maximoDeLista(std::atomic<int>& lastProcessedList, hashMapPair max[]);
 };
 
 #endif  /* HMC_HPP */

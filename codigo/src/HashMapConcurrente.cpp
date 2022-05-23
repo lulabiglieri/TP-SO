@@ -67,7 +67,7 @@ hashMapPair HashMapConcurrente::maximo() {
     return *max;
 }
 
-void HashMapConcurrente::maximoDeLista(atomic<int> &lastProcessedList, hashMapPair max[]) {
+void HashMapConcurrente::maximoDeLista(atomic<int>& lastProcessedList, hashMapPair max[]) {
     int index = lastProcessedList.fetch_add(1);
     while (index < HashMapConcurrente::cantLetras) {
         _locks[index].lock();
@@ -91,7 +91,7 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
 
     vector<thread> threads(HashMapConcurrente::cantLetras);
     for (int i = 0; i<cant_threads; i++) {
-        threads[i] = thread(&HashMapConcurrente::maximoDeLista, ref(lastProcessedList), ref(max));
+        threads[i] = thread(&HashMapConcurrente::maximoDeLista, this, std::ref(lastProcessedList), max);
     }
 
     for (int i = 0; i<cant_threads; i++) {
