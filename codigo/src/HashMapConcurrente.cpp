@@ -70,7 +70,7 @@ hashMapPair HashMapConcurrente::maximo() {
 void HashMapConcurrente::maximoDeLista(atomic<int>& lastProcessedList, hashMapPair max[]) {
     int index = lastProcessedList.fetch_add(1);
     while (index < HashMapConcurrente::cantLetras) {
-        _locks[index].lock();
+        // _locks[index].lock();
 
         max[index].second = 0;
         for (auto &p : *tabla[index]) {
@@ -80,7 +80,7 @@ void HashMapConcurrente::maximoDeLista(atomic<int>& lastProcessedList, hashMapPa
             }
         }
 
-        _locks[index].unlock();
+        // _locks[index].unlock();
         index = lastProcessedList.fetch_add(1);
     }
 }
@@ -89,7 +89,9 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
     atomic<int> lastProcessedList(0);
     hashMapPair max[cantLetras];
 
-    vector<thread> threads(HashMapConcurrente::cantLetras);
+    for (int i = 0; i < cantLetras; i++) _locks[i].lock();
+
+    vector<thread> threads(cant_threads);
     for (auto &t: threads) {
         t = thread(&HashMapConcurrente::maximoDeLista, this, ref(lastProcessedList), max);
     }
@@ -97,6 +99,8 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
     for (auto &t: threads) {
         t.join();
     }
+
+    for (int i = 0; i < cantLetras; i++) _locks[i].unlock();
 
     int maxIndex = 0;
     for (int i = 0; i<HashMapConcurrente::cantLetras; i++) {
