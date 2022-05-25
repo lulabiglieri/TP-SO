@@ -217,7 +217,7 @@ LT_BEGIN_TEST(TestsEjercicio4, CargarMultiplesArchivosFuncionaUnThread)
 LT_END_TEST(CargarMultiplesArchivosFuncionaUnThread)
 
 LT_BEGIN_TEST(TestsEjercicio4, CargarMultiplesArchivosFuncionaDosThreads)
-    cargarMultiplesArchivos(hM, 1, {"data/test-1", "data/test-2", "data/test-3"});
+    cargarMultiplesArchivos(hM, 2, {"data/test-1", "data/test-2", "data/test-3"});
     LT_CHECK_EQ(hM.valor("tiranosaurio"), 2);
     LT_CHECK_EQ(hM.valor("linux"), 3);
     LT_CHECK_EQ(hM.valor("estegosaurio"), 4);
