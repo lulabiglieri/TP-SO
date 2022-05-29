@@ -5,6 +5,7 @@
 // alternativamente #include <pthread.h>
 #include <iostream>
 #include <fstream>
+#include <time.h>
 
 #include "HashMapConcurrente.hpp"
 
@@ -67,7 +68,12 @@ hashMapPair HashMapConcurrente::maximo() {
     return *max;
 }
 
-void HashMapConcurrente::maximoDeLista(atomic<int>& lastProcessedList, hashMapPair max[]) {
+void HashMapConcurrente::maximoDeLista(atomic<int>& lastProcessedList, hashMapPair max[], long& threadStart, long& threadStop) {
+    //clock
+    struct timespec start, stop;
+    //start clock
+    clock_gettime(CLOCK_REALTIME, &start);
+
     int index = lastProcessedList.fetch_add(1);
     while (index < HashMapConcurrente::cantLetras) {
         // _locks[index].lock();
@@ -83,22 +89,37 @@ void HashMapConcurrente::maximoDeLista(atomic<int>& lastProcessedList, hashMapPa
         // _locks[index].unlock();
         index = lastProcessedList.fetch_add(1);
     }
+
+    //end clock
+    clock_gettime(CLOCK_REALTIME, &stop);
+    threadStart = start.tv_nsec;
+    threadStop = stop.tv_nsec;
 }
 
 hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
     atomic<int> lastProcessedList(0);
     hashMapPair max[cantLetras];
+    //clock
+    struct timespec start, stop;
+    long threadStop[cant_threads];
+    long threadStart[cant_threads];
 
     for (int i = 0; i < cantLetras; i++) _locks[i].lock();
-
     vector<thread> threads(cant_threads);
-    for (auto &t: threads) {
-        t = thread(&HashMapConcurrente::maximoDeLista, this, ref(lastProcessedList), max);
+
+    //start clock
+    clock_gettime(CLOCK_REALTIME, &start);
+
+    for (unsigned int i=0; i<cant_threads; i++) {
+        threads[i] = thread(&HashMapConcurrente::maximoDeLista, this, ref(lastProcessedList), max, ref(threadStart[i]), ref(threadStop[i]));
     }
 
     for (auto &t: threads) {
         t.join();
     }
+
+    //end clock
+    clock_gettime(CLOCK_REALTIME, &stop);
 
     for (int i = 0; i < cantLetras; i++) _locks[i].unlock();
 
@@ -108,6 +129,15 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
             maxIndex = i;
         }
     }
+
+
+    //clock prints
+    printf("Total time, %li , nanoseconds\n", stop.tv_nsec - start.tv_nsec);
+    for (unsigned int i=0; i<cant_threads; i++) {
+        printf("thread nro , %i , started at , %li , and finished at, %li . It took a total of %li nanoseconds\n", i, threadStart[i], threadStop[i], threadStop[i] - threadStart[i]);
+
+    }
+    
     return max[maxIndex];
 }
 
