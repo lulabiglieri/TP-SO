@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     cargarMultiplesArchivos(hashMap, cantThreadsLectura, filePaths);
     auto maximo = hashMap.maximoParalelo(cantThreadsMaximo);
 
-    std::cout << maximo.first << " " << maximo.second << std::endl;
+    //std::cout << maximo.first << " " << maximo.second << std::endl;
 
     return 0;
 }

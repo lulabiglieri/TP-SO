@@ -53,8 +53,12 @@ void cargarArchivoParalelo(HashMapConcurrente &hashMap, vector<string> &filePath
 
 void cargarMultiplesArchivos(HashMapConcurrente &hashMap, unsigned int cantThreads, vector<string> filePaths) {
     atomic<int> lastProcessedFile(0);
-
     vector<thread> threads(cantThreads);
+
+    //clock
+    struct timespec start, stop;
+    clock_gettime(CLOCK_REALTIME, &start);
+
     for (auto &t : threads) {
         t = thread(&cargarArchivoParalelo, ref(hashMap), ref(filePaths), ref(lastProcessedFile));
     }
@@ -62,6 +66,10 @@ void cargarMultiplesArchivos(HashMapConcurrente &hashMap, unsigned int cantThrea
     for (auto &t : threads) {
         t.join();
     }
+
+    //end clock
+    clock_gettime(CLOCK_REALTIME, &stop);
+    printf("%i, %li, cargarMultiplesArchivos\n", cantThreads, stop.tv_nsec - start.tv_nsec);
 }
 
 #endif
