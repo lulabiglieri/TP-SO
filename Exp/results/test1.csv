@@ -1,13 +1,1 @@
 cantThreads,time,algorithm
-1, 607474, cargarMultiplesArchivos
-1, 51225, maximoParalelo
-5, 363999, cargarMultiplesArchivos
-5, 110194, maximoParalelo
-10, 429964, cargarMultiplesArchivos
-10, 146907, maximoParalelo
-15, 555377, cargarMultiplesArchivos
-15, 326425, maximoParalelo
-20, 379277, cargarMultiplesArchivos
-20, 378967, maximoParalelo
-25, 680995, cargarMultiplesArchivos
-25, 377069, maximoParalelo
