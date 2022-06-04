@@ -1,0 +1,13 @@
+cantThreads,time,algorithm
+1, 136517, cargarMultiplesArchivos
+1, 39453, maximoParalelo
+5, 350181, cargarMultiplesArchivos
+5, 130147, maximoParalelo
+10, 445621, cargarMultiplesArchivos
+10, 258190, maximoParalelo
+15, 666598, cargarMultiplesArchivos
+15, 421799, maximoParalelo
+20, 787491, cargarMultiplesArchivos
+20, 458652, maximoParalelo
+26, 807249, cargarMultiplesArchivos
+26, 622008, maximoParalelo
