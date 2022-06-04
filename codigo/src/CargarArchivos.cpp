@@ -69,7 +69,7 @@ void cargarMultiplesArchivos(HashMapConcurrente &hashMap, unsigned int cantThrea
 
     //end clock
     clock_gettime(CLOCK_REALTIME, &stop);
-    printf("%i, %li, cargarMultiplesArchivos\n", cantThreads, stop.tv_nsec - start.tv_nsec);
+    printf("%i,%li,%li,cargarMultiplesArchivos\n", cantThreads, stop.tv_sec - start.tv_sec, stop.tv_nsec-start.tv_nsec);
 }
 
 #endif

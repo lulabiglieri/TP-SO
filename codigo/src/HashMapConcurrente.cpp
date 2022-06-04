@@ -34,7 +34,7 @@ void HashMapConcurrente::incrementar(string clave) {
     auto it = find(clave, lista);
     if (it == lista->end()) {
         lista->insertar(hashMapPair(clave, 1));
-        _claves.push_back(clave);
+        //_claves.push_back(clave);
     } else {
         (*it).second++;
     }
@@ -105,7 +105,7 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
 
     //end clock
     clock_gettime(CLOCK_REALTIME, &stop);
-    printf("%i, %li, maximoParalelo\n", cant_threads, stop.tv_nsec - start.tv_nsec);
+    printf("%i,%li,%li,maximoParalelo\n", cant_threads, stop.tv_sec - start.tv_sec, stop.tv_nsec-start.tv_nsec);
 
     for (int i = 0; i < cantLetras; i++) _locks[i].unlock();
 
