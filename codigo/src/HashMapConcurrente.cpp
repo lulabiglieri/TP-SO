@@ -29,12 +29,11 @@ ListaAtomica<hashMapPair>::iterator find(string clave, ListaAtomica<hashMapPair>
 
 void HashMapConcurrente::incrementar(string clave) {
     int index = hashIndex(clave);
-    auto lista = tabla[index];
     _locks[index].lock();
+    auto lista = tabla[index];
     auto it = find(clave, lista);
     if (it == lista->end()) {
         lista->insertar(hashMapPair(clave, 1));
-        //_claves.push_back(clave);
     } else {
         (*it).second++;
     }
@@ -42,7 +41,18 @@ void HashMapConcurrente::incrementar(string clave) {
 }
 
 vector<string> HashMapConcurrente::claves() {
-    return _claves;
+    vector<string> claves;
+    for (unsigned int i = 0; i < HashMapConcurrente::cantLetras; i++) {
+        _locks[i].lock();
+        auto lista = tabla[i];
+        auto it = lista->begin();
+        while (it != lista->end()) {
+            claves.push_back((*it).first);
+            it++;
+        } 
+        _locks[i].unlock();
+    }
+    return claves;
 }
 
 unsigned int HashMapConcurrente::valor(string clave) {
