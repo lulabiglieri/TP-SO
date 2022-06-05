@@ -43,14 +43,12 @@ void HashMapConcurrente::incrementar(string clave) {
 vector<string> HashMapConcurrente::claves() {
     vector<string> claves;
     for (unsigned int i = 0; i < HashMapConcurrente::cantLetras; i++) {
-        _locks[i].lock();
         auto lista = tabla[i];
         auto it = lista->begin();
         while (it != lista->end()) {
             claves.push_back((*it).first);
             it++;
         } 
-        _locks[i].unlock();
     }
     return claves;
 }
