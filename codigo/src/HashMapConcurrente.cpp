@@ -5,6 +5,7 @@
 // alternativamente #include <pthread.h>
 #include <iostream>
 #include <fstream>
+#include <time.h>
 
 #include "HashMapConcurrente.hpp"
 
@@ -28,12 +29,11 @@ ListaAtomica<hashMapPair>::iterator find(string clave, ListaAtomica<hashMapPair>
 
 void HashMapConcurrente::incrementar(string clave) {
     int index = hashIndex(clave);
-    auto lista = tabla[index];
     _locks[index].lock();
+    auto lista = tabla[index];
     auto it = find(clave, lista);
     if (it == lista->end()) {
         lista->insertar(hashMapPair(clave, 1));
-        _claves.push_back(clave);
     } else {
         (*it).second++;
     }
@@ -41,7 +41,16 @@ void HashMapConcurrente::incrementar(string clave) {
 }
 
 vector<string> HashMapConcurrente::claves() {
-    return _claves;
+    vector<string> claves;
+    for (unsigned int i = 0; i < HashMapConcurrente::cantLetras; i++) {
+        auto lista = tabla[i];
+        auto it = lista->begin();
+        while (it != lista->end()) {
+            claves.push_back((*it).first);
+            it++;
+        } 
+    }
+    return claves;
 }
 
 unsigned int HashMapConcurrente::valor(string clave) {
@@ -70,7 +79,6 @@ hashMapPair HashMapConcurrente::maximo() {
 void HashMapConcurrente::maximoDeLista(atomic<int>& lastProcessedList, hashMapPair max[]) {
     int index = lastProcessedList.fetch_add(1);
     while (index < HashMapConcurrente::cantLetras) {
-        // _locks[index].lock();
 
         max[index].second = 0;
         for (auto &p : *tabla[index]) {
@@ -80,7 +88,6 @@ void HashMapConcurrente::maximoDeLista(atomic<int>& lastProcessedList, hashMapPa
             }
         }
 
-        // _locks[index].unlock();
         index = lastProcessedList.fetch_add(1);
     }
 }
@@ -90,15 +97,23 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
     hashMapPair max[cantLetras];
 
     for (int i = 0; i < cantLetras; i++) _locks[i].lock();
-
     vector<thread> threads(cant_threads);
-    for (auto &t: threads) {
-        t = thread(&HashMapConcurrente::maximoDeLista, this, ref(lastProcessedList), max);
+
+    //clock
+    struct timespec start, stop;
+    clock_gettime(CLOCK_REALTIME, &start);
+
+    for (unsigned int i=0; i<cant_threads; i++) {
+        threads[i] = thread(&HashMapConcurrente::maximoDeLista, this, ref(lastProcessedList), max);
     }
 
     for (auto &t: threads) {
         t.join();
     }
+
+    //end clock
+    clock_gettime(CLOCK_REALTIME, &stop);
+    printf("%i,%li,%li,maximoParalelo\n", cant_threads, stop.tv_sec - start.tv_sec, stop.tv_nsec-start.tv_nsec);
 
     for (int i = 0; i < cantLetras; i++) _locks[i].unlock();
 
@@ -108,6 +123,7 @@ hashMapPair HashMapConcurrente::maximoParalelo(unsigned int cant_threads) {
             maxIndex = i;
         }
     }
+    
     return max[maxIndex];
 }
 
